@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101b2d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="PickleScore">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+<title>Pickle Score — Offline</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1220;--panel:#142238;--panel2:#1a2b43;--ink:#f4f7fb;--muted:#9aabc0;--line:#2a3d56;--lime:#c9f36a;--blue:#69b9ff;--red:#ff8c85}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}
+body{padding:env(safe-area-inset-top) 16px calc(24px + env(safe-area-inset-bottom));}
+.app{max-width:520px;margin:0 auto}.top{display:flex;align-items:center;justify-content:space-between;padding:14px 2px 18px}.brand{font-weight:850;letter-spacing:-.04em;font-size:21px}.brand span{color:var(--lime)}.tag{font-size:11px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:18px;margin-bottom:14px;box-shadow:0 10px 30px #0002}
+.score-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);font-weight:750}.game-status{font-size:12px;color:var(--lime);font-weight:750}
+.scoreline{display:flex;align-items:center;justify-content:center;gap:10px;padding:8px 0 16px}
+.score{font-size:clamp(68px,19vw,100px);font-weight:850;letter-spacing:-.075em;line-height:.95;font-variant-numeric:tabular-nums}
+.dash{font-size:40px;color:#60758d;font-weight:300;margin-top:-8px}
+.score-sub{display:flex;justify-content:center;gap:18px;color:var(--muted);font-size:12px;margin-top:2px}
+.serve-pill{display:inline-flex;align-items:center;gap:7px;border:1px solid #40546c;border-radius:99px;padding:7px 11px;font-size:12px;font-weight:750;color:var(--lime)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--lime);box-shadow:0 0 10px #c9f36a88}
+.teams{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+.team{background:var(--panel2);border-radius:15px;padding:12px;min-width:0}
+.team.active{outline:2px solid var(--lime)}
+.team-label{font-size:10px;letter-spacing:.13em;color:var(--muted);text-transform:uppercase;font-weight:800;margin-bottom:7px}
+.team-name{font-size:16px;font-weight:800;overflow-wrap:anywhere}.playerline{font-size:12px;color:#b6c5d7;margin-top:4px;line-height:1.4}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+button{font:inherit;border:0;cursor:pointer;touch-action:manipulation}
+.win{min-height:78px;border-radius:18px;padding:12px;background:var(--lime);color:#15200b;text-align:left;display:flex;flex-direction:column;justify-content:center;gap:5px}
+.win.alt{background:#243b57;color:var(--ink);border:1px solid #3b5675}
+.win:active,.utility:active{transform:scale(.985)}
+.win strong{font-size:15px;line-height:1.1}.win small{font-size:11px;opacity:.75}
+.section-title{font-size:16px;font-weight:850;letter-spacing:-.02em;margin:0 0 12px}
+.row{display:flex;gap:9px;align-items:center}.row>*{min-width:0}
+input,select{width:100%;background:#0d192a;color:var(--ink);border:1px solid #354b65;border-radius:12px;padding:12px 11px;font:inherit;font-size:14px;min-height:44px;outline:none}
+input:focus,select:focus{border-color:var(--lime)}
+.field-label{font-size:11px;color:var(--muted);font-weight:750;display:block;margin:12px 0 6px}
+.utility{background:#263d59;color:var(--ink);border:1px solid #3b5675;border-radius:12px;padding:11px 13px;font-size:13px;font-weight:750;min-height:42px}
+.utility.primary{background:var(--lime);color:#15200b;border:0}
+.utility.danger{color:#ffaaa4}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.muted{color:var(--muted);font-size:12px;line-height:1.5}
+.records{display:grid;gap:8px}
+.record{display:flex;align-items:center;justify-content:space-between;background:#0d192a;border-radius:12px;padding:11px 12px;gap:10px}
+.record-name{font-size:14px;font-weight:750;overflow-wrap:anywhere}.wl{font-size:13px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}.wl b{color:var(--lime)}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px}
+.hidden{display:none!important}
+.modalback{position:fixed;inset:0;background:#0009;display:flex;align-items:flex-end;justify-content:center;padding:14px;z-index:5}
+.modal{background:var(--panel);border:1px solid var(--line);border-radius:22px 22px 18px 18px;padding:20px;width:min(100%,500px);max-height:85vh;overflow:auto}
+.modal h2{margin:0 0 8px;font-size:20px}
+.toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:#f4f7fb;color:#101b2d;padding:11px 16px;border-radius:99px;font-size:13px;font-weight:750;box-shadow:0 8px 30px #0006;z-index:10;white-space:nowrap}
+@media(min-width:520px){body{padding-top:22px}.score{font-size:100px}}
+</style>
+</head>
+<body>
+<div class="app">
+ <header class="top"><div class="brand">PICKLE<span>SCORE</span></div><div class="tag">Offline match tracker</div></header>
+ <section class="card">
+  <div class="score-head"><span class="eyebrow">Current match · doubles</span><span class="game-status" id="status">GAME TO 11</span></div>
+  <div class="scoreline" aria-live="polite"><div class="score" id="scoreA">0</div><div class="dash">–</div><div class="score" id="scoreB">0</div></div>
+  <div class="score-sub"><span id="labelA">HOME</span><span id="labelB">AWAY</span></div>
+  <div style="display:flex;justify-content:center;margin-top:14px"><div class="serve-pill"><span class="dot"></span><span id="call">0 – 0 – 2</span></div></div>
+  <div class="teams">
+   <div class="team" id="teamCardA"><div class="team-label">Team A · <span id="serveTagA">Serving</span></div><div class="team-name" id="teamNameA">Home</div><div class="playerline" id="playersA">Player 1 / Player 2</div></div>
+   <div class="team" id="teamCardB"><div class="team-label">Team B · <span id="serveTagB">Receiving</span></div><div class="team-name" id="teamNameB">Away</div><div class="playerline" id="playersB">Player 3 / Player 4</div></div>
+  </div>
+ </section>
+ <div class="actions">
+  <button class="win" id="wonA"><strong>Team A won rally</strong><small>Tap to award point / serve</small></button>
+  <button class="win alt" id="wonB"><strong>Team B won rally</strong><small>Tap to award point / serve</small></button>
+ </div>
+ <div class="toolbar" style="margin-bottom:14px">
+  <button class="utility" id="undo">↶ Undo</button><button class="utility" id="newMatch">＋ New match</button><button class="utility" id="finish">Finish match</button>
+ </div>
+ <section class="card">
+  <h2 class="section-title">Players & match setup</h2>
+  <div class="grid2"><div><label class="field-label">Team A name</label><input id="nameA" value="Home" maxlength="24"></div><div><label class="field-label">Team B name</label><input id="nameB" value="Away" maxlength="24"></div></div>
+  <div class="grid2"><div><label class="field-label">Team A · Player 1</label><input id="a1" value="Player 1" maxlength="28"></div><div><label class="field-label">Team A · Player 2</label><input id="a2" value="Player 2" maxlength="28"></div></div>
+  <div class="grid2"><div><label class="field-label">Team B · Player 1</label><input id="b1" value="Player 3" maxlength="28"></div><div><label class="field-label">Team B · Player 2</label><input id="b2" value="Player 4" maxlength="28"></div></div>
+  <div class="grid2"><div><label class="field-label">Starting team</label><select id="starting"><option value="0">Team A serves first</option><option value="1">Team B serves first</option></select></div><div><label class="field-label">Game target</label><select id="target"><option>11</option><option>15</option><option>21</option></select></div></div>
+  <p class="muted">Standard doubles scoring: first service of the game starts at service number 2 (the opening-server exception). After the first side-out, service rotates 1, then 2.</p>
+  <button class="utility primary" id="apply" style="width:100%;margin-top:10px">Apply names & start new match</button>
+ </section>
+ <section class="card">
+  <h2 class="section-title">Player records</h2><div class="records" id="records"><p class="muted">Finished matches will update each player's win–loss record.</p></div>
+ </section>
+ <section class="card">
+  <h2 class="section-title">Your data</h2>
+  <p class="muted">Your roster, records and match history stay on this device. Export a backup to move your data or keep a copy.</p>
+  <div class="toolbar"><button class="utility primary" id="export">Export backup</button><button class="utility" id="importBtn">Import backup</button><button class="utility danger" id="clear">Clear all data</button><input class="hidden" type="file" id="file" accept="application/json,.json"></div>
+ </section>
+ <p class="muted" style="text-align:center;padding:2px 10px 18px">PickleScore · Works offline after this file is saved to your device.</p>
+</div>
+<div class="modalback hidden" id="finishModal"><div class="modal"><h2 id="finishTitle">Match complete</h2><p class="muted" id="finishText"></p><div class="toolbar"><button class="utility primary" id="saveResult">Save result</button><button class="utility" id="closeModal">Not now</button></div></div></div>
+<div class="toast hidden" id="toast"></div>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const blank=()=>({teams:[{name:'Home',players:['Player 1','Player 2']},{name:'Away',players:['Player 3','Player 4']}],target:11,score:[0,0],serving:0,server:0,serviceNo:2,opening:true,done:false,saved:false,history:[]});
+let data={roster:{},matches:[],match:blank()};
+const clone=x=>JSON.parse(JSON.stringify(x));
+function load(){try{const v=JSON.parse(localStorage.getItem('picklescore_v1'));if(v&&v.match&&v.roster)data=v}catch(e){}}
+function persist(){try{localStorage.setItem('picklescore_v1',JSON.stringify(data))}catch(e){toast('Could not save on this device')}}
+function toast(s){$('toast').textContent=s;$('toast').classList.remove('hidden');setTimeout(()=>$('toast').classList.add('hidden'),1900)}
+function names(){return [0,1].map(t=>data.match.teams[t].players)}
+function call(){const m=data.match;return `${m.score[m.serving]} – ${m.score[1-m.serving]} – ${m.serviceNo}`}
+function render(){
+ const m=data.match;$('scoreA').textContent=m.score[0];$('scoreB').textContent=m.score[1];
+ $('labelA').textContent=m.teams[0].name.toUpperCase();$('labelB').textContent=m.teams[1].name.toUpperCase();
+ $('teamNameA').textContent=m.teams[0].name;$('teamNameB').textContent=m.teams[1].name;
+ $('playersA').textContent=m.teams[0].players.join(' / ');$('playersB').textContent=m.teams[1].players.join(' / ');
+ $('teamCardA').classList.toggle('active',m.serving===0);$('teamCardB').classList.toggle('active',m.serving===1);
+ $('serveTagA').textContent=m.serving===0?'Serving':'Receiving';$('serveTagB').textContent=m.serving===1?'Serving':'Receiving';
+ $('call').textContent=call();$('status').textContent=m.done?'MATCH OVER':`GAME TO ${m.target}`;
+ $('wonA').querySelector('strong').textContent=`${m.teams[0].name} won rally`;
+ $('wonB').querySelector('strong').textContent=`${m.teams[1].name} won rally`;
+ $('wonA').disabled=$('wonB').disabled=m.done;
+ $('wonA').style.opacity=$('wonB').style.opacity=m.done?'.45':'1';
+ renderRecords();
+}
+function snapshot(){const m=data.match;m.history.push({score:[...m.score],serving:m.serving,server:m.server,serviceNo:m.serviceNo,opening:m.opening});if(m.history.length>100)m.history.shift()}
+function rally(winner){
+ const m=data.match;if(m.done)return;snapshot();
+ if(winner===m.serving){m.score[winner]++;}else{
+  if(m.opening){m.opening=false;m.serving=1-m.serving;m.server=0;m.serviceNo=1;}
+  else if(m.serviceNo===1){m.server=1;m.serviceNo=2;}
+  else{m.serving=1-m.serving;m.server=0;m.serviceNo=1;}
+ }
+ const s=m.score,loser=1-winner;
+ if(s[winner]>=m.target&&s[winner]-s[loser]>=2){m.done=true;showFinish(winner)}
+ persist();render();
+}
+function undo(){const m=data.match;if(!m.history.length){toast('Nothing to undo');return}const p=m.history.pop();Object.assign(m,p);m.done=false;m.saved=false;persist();render()}
+function showFinish(w){$('finishTitle').textContent=`${data.match.teams[w].name} wins!`;$('finishText').textContent=`Final score: ${data.match.score[0]} – ${data.match.score[1]}. Save this result to update player records.`;$('finishModal').classList.remove('hidden')}
+function finish(){const m=data.match;if(m.done){showFinish(m.score[0]>m.score[1]?0:1);return}if(m.score[0]===m.score[1]){toast('A tied match cannot be saved as a win');return}m.done=true;showFinish(m.score[0]>m.score[1]?0:1);render()}
+function saveResult(){
+ const m=data.match;if(m.saved)return;
+ const w=m.score[0]>m.score[1]?0:1,match={date:new Date().toISOString(),teams:clone(m.teams),score:[...m.score],winner:w,target:m.target};
+ data.matches.push(match);
+ m.teams.forEach((team,i)=>team.players.forEach(p=>{const n=p.trim();if(!n)return;if(!data.roster[n])data.roster[n]={w:0,l:0};if(i===w)data.roster[n].w++;else data.roster[n].l++}));
+ m.saved=true;persist();render();$('finishModal').classList.add('hidden');toast('Result saved to player records');
+}
+function renderRecords(){
+ const entries=Object.entries(data.roster).sort((a,b)=>(b[1].w/(b[1].w+b[1].l||1))-(a[1].w/(a[1].w+a[1].l||1)));
+ $('records').innerHTML=entries.length?'':'<p class="muted">Finished matches will update each player’s win–loss record.</p>';
+ entries.forEach(([n,r])=>{const d=document.createElement('div');d.className='record';const name=document.createElement('span');name.className='record-name';name.textContent=n;const wl=document.createElement('span');wl.className='wl';wl.innerHTML=`<b>${r.w} W</b> · ${r.l} L`;d.append(name,wl);$('records').append(d)});
+}
+function readSetup(){const m=blank();m.teams=[{name:$('nameA').value.trim()||'Team A',players:[$('a1').value.trim()||'Player 1',$('a2').value.trim()||'Player 2']},{name:$('nameB').value.trim()||'Team B',players:[$('b1').value.trim()||'Player 3',$('b2').value.trim()||'Player 4']}];m.serving=Number($('starting').value);m.target=Number($('target').value);return m}
+function syncForm(){const m=data.match;$('nameA').value=m.teams[0].name;$('nameB').value=m.teams[1].name;$('a1').value=m.teams[0].players[0];$('a2').value=m.teams[0].players[1];$('b1').value=m.teams[1].players[0];$('b2').value=m.teams[1].players[1];$('target').value=String(m.target);$('starting').value=String(m.serving)}
+$('wonA').onclick=()=>rally(0);$('wonB').onclick=()=>rally(1);$('undo').onclick=undo;
+$('newMatch').onclick=()=>{if(!confirm('Start a new match? The current match will not be added to records.'))return;data.match=readSetup();persist();render()};
+$('apply').onclick=()=>{data.match=readSetup();persist();render();toast('New match ready')};
+$('finish').onclick=finish;$('saveResult').onclick=saveResult;$('closeModal').onclick=()=>$('finishModal').classList.add('hidden');
+$('export').onclick=()=>{const blob=new Blob([JSON.stringify({...data,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='picklescore-backup.json';a.click();URL.revokeObjectURL(a.href);toast('Backup exported')};
+$('importBtn').onclick=()=>$('file').click();
+$('file').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const v=JSON.parse(await f.text());if(!v||!v.match||!v.roster||!Array.isArray(v.matches))throw Error();if(!confirm('Import this backup and replace the data currently on this device?'))return;data={roster:v.roster,matches:v.matches,match:v.match};persist();syncForm();render();toast('Backup imported')}catch(err){toast('That backup file is not valid')}e.target.value=''};
+$('clear').onclick=()=>{if(!confirm('Permanently clear this app’s roster, records and current match? Export a backup first if needed.'))return;data={roster:{},matches:[],match:blank()};persist();syncForm();render();toast('All app data cleared')};
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+load();syncForm();render();
+})();
+</script>
+</body></html>
